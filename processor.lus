@@ -158,12 +158,13 @@ tel;
 
 ------------*****************************************-------------------
 
-node cache(in_arb: int; in_cpu: bool^4, in_bus: bool^4)
+node cache1(in_arb: int; in_cpu: bool^4, in_bus: bool^4)
     returns (out_arb: bool; out_cpu: bool^2; out_bus: bool^4);
 
 var data: bool^2;
     cpu_req: bool^3;
     data_valid: bool;
+    requesting: bool;
 
 let
 
@@ -180,12 +181,27 @@ let
         ;
     out_bus[2] = cpu_req[2]
         ;
-    out_bus[3] = in_cpu[3]
+    out_bus[3] = in_cpu[3] and not data_valid
         ;
 
+    data_valid = (cpu_req[1] and data[0]) or (not cpu_req[1] and not data[0])
+        ;
 
+    requesting = if out_bus[3] then true
+                    else if pre in_arb = 1 and in_arb = 0 and in_bus[3] then false
+                    else pre requesting
+        ;
+
+    data[0] =
 ;
-
+    data[1] =
+;
+    out_cpu[0] = cpu_req[0]
+;
+    out_cpu[1] = if cpu_req[1] then
+;
+;
+;
 
 tel;
 
