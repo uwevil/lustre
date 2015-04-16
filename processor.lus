@@ -118,32 +118,32 @@ node bus(in_1, in_2, in_3, in_mem: bool^4; arg_gnt: int) returns (out: bool^4);
 var temp1, temp2, temp3, temp4: bool^3;
 
 let
-    temp1[0] = if false -> in_1[3] then in_1[0]
+    temp1[0] = if in_1[3] then in_1[0]
                     else false -> pre temp1[0];
-    temp1[1] = if false -> in_1[3] then in_1[1]
+    temp1[1] = if in_1[3] then in_1[1]
                     else false -> pre temp1[1];
-    temp1[2] = if false -> in_1[3] then in_1[2]
+    temp1[2] = if in_1[3] then in_1[2]
                     else false -> pre temp1[2];
 
-    temp2[0] = if false -> in_2[3] then in_2[0]
+    temp2[0] = if in_2[3] then in_2[0]
                     else false -> pre temp2[0];
-    temp2[1] = if false -> in_2[3] then in_2[1]
+    temp2[1] = if in_2[3] then in_2[1]
                     else false -> pre temp2[1];
-    temp2[2] = if false -> in_2[3] then in_2[2]
+    temp2[2] = if in_2[3] then in_2[2]
                     else false -> pre temp2[2];
 
-    temp3[0] = if false -> in_3[3] then in_3[0]
+    temp3[0] = if in_3[3] then in_3[0]
                     else false -> pre temp3[0];
-    temp3[1] = if false -> in_3[3] then in_3[1]
+    temp3[1] = if in_3[3] then in_3[1]
                     else false -> pre temp3[1];
-    temp3[2] = if false -> in_3[3] then in_3[2]
+    temp3[2] = if in_3[3] then in_3[2]
                     else false -> pre temp3[2];
 
-    temp4[0] = if false -> in_mem[3] then in_mem[0]
+    temp4[0] = if in_mem[3] then in_mem[0]
                     else false -> pre temp4[0];
-    temp4[1] = if false -> in_mem[3] then in_mem[1]
+    temp4[1] = if in_mem[3] then in_mem[1]
                     else false -> pre temp4[1];
-    temp4[2] = if false -> in_mem[3] then in_mem[2]
+    temp4[2] = if in_mem[3] then in_mem[2]
                     else false -> pre temp4[2];
 
     out[0..2] = if arg_gnt = 3 then

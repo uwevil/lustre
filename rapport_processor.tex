@@ -96,8 +96,8 @@
 
 --in: L1_1, L1_2, L1_3
 --valid
---out: le cache choisit(resp. 1, 2, 3) et le mémoire(0)
---last: le dernier cache choisit sauf le mémoire
+--out: le cache choisit(resp. 1, 2, 3) et la mémoire(0)
+--last: le dernier cache choisit sauf la mémoire
 --commad: vaut true si le dernier out est un des caches sinon 
 	vaut false
 
@@ -139,13 +139,13 @@ tel;
 		\end{verbatim}
 	\end{framed}
 	
-	L'arbitre prend en entrée 2 entrées $in$ de 3 bits et $valid$ de 1 bit. Si il y a plusieurs de requêtes simultanément, il va choisir le cache le plus prioritaire selon le numéro de cache et le dernier cache qui a utilisé le bus. Après un cycle, il rend le bus au mémoire, tant que le mémoire ne valide pas le bus( ne répond pas la requête du cache), le bus est toujours au mémoire. Si il y a des caches qui ne déactivent pas le signal de requête même si ils ont eu la réponse valide du mémoire, l'arbitre va rendre le bus au autre\footnote{Le cache dans ce programme n'a pas de comportement mauvais}.	
+	L'arbitre prend en entrée 2 entrées $in$ de 3 bits et $valid$ de 1 bit. Si il y a plusieurs de requêtes simultanément, il va choisir le cache le plus prioritaire selon le numéro de cache et le dernier cache qui a utilisé le bus. Après un cycle, il rend le bus à la mémoire, tant que la mémoire ne valide pas le bus( ne répond pas la requête du cache), le bus est toujours à la mémoire. Si il y a des caches qui ne déactivent pas le signal de requête même si ils ont eu la réponse valide de la mémoire, l'arbitre va rendre le bus au autre\footnote{Le cache dans ce programme n'a pas de comportement mauvais}.	
 	
 	\begin{figure}[!htbp]
-		
 		\includegraphics[width = 16cm]{arb_diag_1.png}
 		\caption{Le cache ne rend pas le bus aux autres}
 	\end{figure}
+	
 	\begin{figure}[!htbp]
 		\centering
 		\includegraphics[width = 10cm]{arb_diag_2.png}
@@ -195,12 +195,11 @@ tel;
 		\end{verbatim}
 	\end{framed}
 	
-	Le mémoire regard les données entrantes, si elles sont valides, il répond en mettant la réponse dans sa boîte aux lettres sur le bus, il prend un cycle pour traiter un requête. Au début, les données sur le mémoire sont mise à 0.
+	La mémoire regard les données entrantes, si elles sont valides, elle répond en mettant la réponse dans sa boîte aux lettres sur le bus, il prend un cycle pour traiter un requête. Au début, les données sur la mémoire sont mise à 0.
 	
-	\begin{figure}[!htbp]
-		
+	\begin{figure}[!htbp]	
 		\includegraphics[width = 16cm]{mem_diag_1.png}
-		\caption{Les actions sur le mémoire, dès qu'il reçoit une requête valide il répond, dans un cycle}
+		\caption{Les actions sur la mémoire, dès qu'il reçoit une requête valide il répond, dans un cycle}
 	\end{figure}
 	
 \chapter{Bus}
@@ -209,41 +208,41 @@ tel;
 		node bus(in_1, in_2, in_3, in_mem: bool^4; arg_gnt: int) 
 			returns (out: bool^4);
 
---in_1( resp. 2, 3, mem): l'entrée dans le bus mais les 
-	données entrées sont toujours dans le bus, elles ne peuvent 
-	sortir que si l'arbitre leurs donne la permission
+--in_1( resp. 2, 3, mem): l'entrée dans le bus mais les données 
+	entrées sont toujours dans le bus, elles ne peuvent sortir 
+	que si l'arbitre leurs donne la permission
 --temp1( resp. 2, 3, 4): b_in_L1_1 et b_in_mem dans l'énoncé
 
 
 var temp1, temp2, temp3, temp4: bool^3;
 
 let
-    temp1[0] = if false -> in_1[3] then in_1[0]
+    temp1[0] = if in_1[3] then in_1[0]
                     else false -> pre temp1[0];
-    temp1[1] = if false -> in_1[3] then in_1[1]
+    temp1[1] = if in_1[3] then in_1[1]
                     else false -> pre temp1[1];
-    temp1[2] = if false -> in_1[3] then in_1[2]
+    temp1[2] = if in_1[3] then in_1[2]
                     else false -> pre temp1[2];
 
-    temp2[0] = if false -> in_2[3] then in_2[0]
+    temp2[0] = if in_2[3] then in_2[0]
                     else false -> pre temp2[0];
-    temp2[1] = if false -> in_2[3] then in_2[1]
+    temp2[1] = if in_2[3] then in_2[1]
                     else false -> pre temp2[1];
-    temp2[2] = if false -> in_2[3] then in_2[2]
+    temp2[2] = if in_2[3] then in_2[2]
                     else false -> pre temp2[2];
 
-    temp3[0] = if false -> in_3[3] then in_3[0]
+    temp3[0] = if in_3[3] then in_3[0]
                     else false -> pre temp3[0];
-    temp3[1] = if false -> in_3[3] then in_3[1]
+    temp3[1] = if in_3[3] then in_3[1]
                     else false -> pre temp3[1];
-    temp3[2] = if false -> in_3[3] then in_3[2]
+    temp3[2] = if in_3[3] then in_3[2]
                     else false -> pre temp3[2];
 
-    temp4[0] = if false -> in_mem[3] then in_mem[0]
+    temp4[0] = if in_mem[3] then in_mem[0]
                     else false -> pre temp4[0];
-    temp4[1] = if false -> in_mem[3] then in_mem[1]
+    temp4[1] = if in_mem[3] then in_mem[1]
                     else false -> pre temp4[1];
-    temp4[2] = if false -> in_mem[3] then in_mem[2]
+    temp4[2] = if in_mem[3] then in_mem[2]
                     else false -> pre temp4[2];
 
     out[0..2] = if arg_gnt = 3 then
@@ -260,9 +259,16 @@ let
                 ;
 
 tel;
-
 		\end{verbatim}
 	\end{framed}
+	
+	Le bus prend en entrée 3 lignes de cache, 1 ligne pour la mémoire et 1 pour l'arbitre, il retourne la requête ou la réponse, cela dépend le contrôleur sur une seule ligne de sortie.
+	
+	\begin{figure}[!htbp]	
+		\includegraphics[width = 16cm]{bus_diag.png}
+		\caption{Le bus est controlé absolutement par l'arbitre}
+	\end{figure}
+	
 \chapter{Cache}
 	\begin{framed}
 		\begin{verbatim}
@@ -320,7 +326,7 @@ let
         ;
 
     data[0] = if not data_valid
-                    and 0 -> pre in_arb = 2
+                    and 0 -> pre in_arb = 1*
                     and in_arb = 0
                     and in_bus[3] then
                         if (not in_bus[1] 
@@ -332,7 +338,7 @@ let
                 else false -> pre data[0]
         ;
     data[1] = if not data_valid
-                and 0 -> pre in_arb = 2
+                and 0 -> pre in_arb = 1*
                 and in_arb = 0
                 and in_bus[3]
                 then
@@ -352,7 +358,7 @@ let
     write_valid = if in_cpu[3] and in_cpu[0] then false
                     else if in_bus[0]
                             and in_bus[3]
-                            and 0 -> pre in_arb = 2
+                            and 0 -> pre in_arb = 1*
                             and in_arb = 0
                         then true
                         else true -> pre write_valid
@@ -378,12 +384,18 @@ let
         ;
     out_cpu[1] = if data_valid then true else false
         ;
-
 tel;
 
 		\end{verbatim}
 	\end{framed}
-
+	
+	Le cache doit traiter des cas spécifiques car il doit vérifier si les données présentées dans le cache sont valides, si elles sont valides, le cache répond au bus dans le même cycle, sinon il met la requête dans sa boîte aux lettres sur le bus et demande l'arbitre pour avoir le bus, dès qu'il reçoit la réponse de la mémoire, il renvoie les données vers le CPU. Dans le code, on change le \emph{1*} par 1, 2 ou 3 resp. L1_1, L1_2, L1_3.
+	
+	Le sénario de test est d'abord, il n'y a pas de requête valide de CPU, ensuite, CPU_WR(0, 1), le cache demande l'accès au bus car dans le cache il n'y a que les données de l'adresse 0( égale à 0). Dès que le cache a la permission au bus et reçoit la réponse valide de la mémoire, il renvoies le résultat au CPU dans le cycle suivant.
+	\begin{figure}[!htbp]	
+		\includegraphics[width = 16cm]{cache_diag.png}
+		\caption{Le bus est controlé absolutement par l'arbitre}
+	\end{figure}
 \end{document}
 
 
