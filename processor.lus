@@ -1,9 +1,9 @@
 node cpu(gen: bool^2; in: bool^2) returns (out: bool^4);
 
 --gen: 0 read, 1 write
---in: data = 0/1 avec validite == 1
---in: ack = 1 avec validite == 0
---out: type, data, adresse, validite
+--in: désigne 2 informations data ou ack, ces informations sont validées si 2eme bit vaut 1
+
+--out: typedata, adresse data, data, valid
 
 var ok: bool;
 
@@ -30,7 +30,11 @@ tel;
 
 node arb(in: bool^3; valid: bool) returns (out: int);
 
---in: L1_1, L1_2
+--in: L1_1, L1_2, L1_3
+--valid
+--out: le cache choisit(resp. 1, 2, 3) et le mémoire(0)
+--last: le dernier cache choisit sauf le mémoire
+--commad: vaut true si le dernier out est un des caches sinon vaut false
 
 var
     last: int;
@@ -67,6 +71,9 @@ tel;
 ------------*****************************************-------------------
 
 node mem(in: bool^4)returns (out: bool^4);
+
+--in, out: typedata, adresse, data, valid
+--reg0, reg1: 2 registres locals
 
 var reg0, reg1: bool;
 
@@ -106,6 +113,10 @@ tel;
 ------------*****************************************-------------------
 
 node bus(in_1, in_2, in_3, in_mem: bool^4; arg_gnt: int) returns (out: bool^4);
+
+--in_1( resp. 2, 3, mem): l'entrée dans le bus mais les données entrées sont toujours dans le bus, elles ne peuvent sortir que si l'arbitre leurs donne la permission
+--temp1( resp. 2, 3, 4): b_in_L1_1 et b_in_mem dans l'énoncé
+
 
 var temp1, temp2, temp3, temp4: bool^3;
 
@@ -157,6 +168,21 @@ tel;
 
 node cache(in_arb: int; in_cpu: bool^4; in_bus: bool^4)
     returns (out_arb: bool; out_cpu: bool^2; out_bus: bool^4);
+
+--in_arb: le numéro actuel de ce qui a la permission d'accès au bus
+--in_cpu: typedata, adresse, data, valid
+--in_bus: typedata, adresse, data, valid
+
+--out_arb: vaut 1 si le cache veut le bus sinon 0, le signal maintient jusqu'à qu'il recoit la réponse du mémoire
+--out_cpu: data, valid, valid vaut 1 si la réponse est valide et l'acquittement du cache
+--out_bus: typedata, adresse, data, valid
+
+--data: le registre local dans le cache
+--cpu_req: stock la requete de CPU précedente ou en traitement
+--data_valid: vaut 1 si les données stockent dans le cache est correspond avec la requête de CPU
+--read, write: l'etat actuel du traitement
+--write_valid: vaut 1 si les données sont valides sur le cache donc il peut répondre tout de suite au CPU sinon vaut 0
+
 
 var data: bool^2;
     cpu_req: bool^3;
@@ -241,7 +267,6 @@ let
         ;
     out_cpu[1] = if data_valid then true else false
         ;
-
 
 tel;
 
