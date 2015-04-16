@@ -262,7 +262,12 @@ let
     out_cpu[0] = if data_valid and read then data[1]
                     else false
         ;
-    out_cpu[1] = if data_valid then true else false
+    out_cpu[1] = if write then
+                    if 0 -> pre in_arb = 2 and in_arb = 0 then
+                        true
+                    else
+                        false
+                    else if data_valid then true else false
         ;
 
 tel;
