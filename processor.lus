@@ -19,7 +19,7 @@ out[2] = if ok and out[0] then
                         false;
 out[3] = if ok then true else false;
 
-ok = true -> if in[1] then
+ok = true -> if pre in[1] then
                 true
              else
                 false
@@ -155,22 +155,21 @@ tel;
 
 ------------*****************************************-------------------
 
-node cache1(in_arb: int; in_cpu: bool^4; in_bus: bool^4)
+node cache(in_arb: int; in_cpu: bool^4; in_bus: bool^4)
     returns (out_arb: bool; out_cpu: bool^2; out_bus: bool^4);
 
 var data: bool^2;
     cpu_req: bool^3;
     data_valid: bool;
-    requesting: bool;
     read, write: bool;
 
 let
 
-    cpu_req[0] = if in_cpu[3] then in_cpu[0] else pre cpu_req[0]
+    cpu_req[0] = if in_cpu[3] then in_cpu[0] else false -> pre cpu_req[0]
                     ;
-    cpu_req[1] = if in_cpu[3] then in_cpu[1] else pre cpu_req[1]
+    cpu_req[1] = if in_cpu[3] then in_cpu[1] else false -> pre cpu_req[1]
                     ;
-    cpu_req[2] = if in_cpu[3] then in_cpu[2] else pre cpu_req[2]
+    cpu_req[2] = if in_cpu[3] then in_cpu[2] else false -> pre cpu_req[2]
                     ;
 
     out_bus[0] = cpu_req[0]
@@ -179,21 +178,17 @@ let
         ;
     out_bus[2] = cpu_req[2]
         ;
-    out_bus[3] = cpu_req[0] or not data_valid
+    out_bus[3] = cpu_req[0] or not (data_valid)
         ;
 
-    data_valid = (cpu_req[1] and data[0]) or (not cpu_req[1] and not data[0])
-        ;
-
-    requesting = if out_bus[3] then true
-                    else if pre in_arb = 1 and in_arb = 0 and in_bus[3] then false
-                    else pre requesting
+    data_valid = (cpu_req[1] and false -> pre data[0])
+                    or (not cpu_req[1] and not (false -> pre data[0]))
         ;
 
     data[0] = if not data_valid and in_arb = 0 and in_bus[3] then
-                    if in_bus[1] xor pre data[0] then in_bus[1]
-                    else pre data[0]
-                else pre data[0]
+                    if in_bus[1] xor false -> pre data[0] then in_bus[1]
+                    else false -> pre data[0]
+                else false -> pre data[0]
         ;
     data[1] = if not data_valid and in_arb = 0 and in_bus[3] then
                     in_bus[2]
@@ -201,19 +196,25 @@ let
                         and in_arb = 0
                         and in_bus[3]
                         and (data[0] and in_bus[1]
-                        or not data[0] and not in_bus[1]) then
+                        or not (data[0]) and not (in_bus[1])) then
                             in_bus[2]
                     else if data_valid and write then
                         in_cpu[2]
-                    else pre data[1]
+                    else false -> pre data[1]
         ;
 
     out_arb = not data_valid
         ;
 
-    read = not cpu_req[0]
+    read = if in_cpu[3] then
+                if not in_cpu[0] then true
+                else false
+            else false -> pre read
         ;
-    write = cpu_req[0]
+    write = if in_cpu[3] then
+                if in_cpu[0] then true
+                else false
+            else false -> pre write
         ;
 
     out_cpu[0] = if data_valid and read then data[1]
@@ -227,6 +228,46 @@ tel;
 
 ------------*****************************************-------------------
 
+node processor(in_gen: bool^2) returns (ok: bool);
+
+var out_cpu1, out_cpu2, out_cpu3: bool^4;
+    out_arb: int;
+    out_mem: bool^4;
+    out_bus: bool^4;
+
+    cache_out_arb1, cache_out_arb2, cache_out_arb3: bool;
+    cache_out_cpu1, cache_out_cpu2, cache_out_cpu3: bool^2;
+    cache_out_bus1, cache_out_bus2, cache_out_bus3: bool^4;
+
+    in_arb: bool^3;
+
+let
+    out_cpu1[0..3] = cpu(in_gen[0..1], cache_out_cpu1[0..1]);
+    out_cpu2[0..3] = cpu(in_gen[0..1], cache_out_cpu2[0..1]);
+    out_cpu3[0..3] = cpu(in_gen[0..1], cache_out_cpu3[0..1]);
+
+    in_arb[0] = cache_out_arb1;
+    in_arb[1] = cache_out_arb2;
+    in_arb[2] = cache_out_arb3;
+
+    out_arb = arb(in_arb[0..2], out_bus[3]);
+
+    out_mem[0..3] = mem(out_bus[0..3]);
+
+    (out_bus[0..3]) = bus(cache_out_bus1[0..3], cache_out_bus2[0..3], cache_out_bus3[0..3], out_mem[0..3], out_arb);
+
+    (cache_out_arb1, cache_out_cpu1[0..1], cache_out_bus1[0..3])
+        = cache(out_arb, out_cpu1[0..3], out_bus[0..3]);
+
+    (cache_out_arb2, cache_out_cpu2[0..1], cache_out_bus2[0..3])
+        = cache(out_arb, out_cpu2[0..3], out_bus[0..3]);
+
+    (cache_out_arb3, cache_out_cpu3[0..1], cache_out_bus3[0..3])
+        = cache(out_arb, out_cpu3[0..3], out_bus[0..3]);
+
+    ok = true;
+
+tel;
 
 
 
