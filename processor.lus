@@ -162,6 +162,7 @@ var data: bool^2;
     cpu_req: bool^3;
     data_valid: bool;
     read, write: bool;
+    write_valid: bool;
 
 let
 
@@ -181,16 +182,24 @@ let
     out_bus[3] = cpu_req[0] or not (data_valid)
         ;
 
-    data_valid = (cpu_req[1] and false -> pre data[0])
-                    or (not cpu_req[1] and not (false -> pre data[0]))
+    data_valid = not( cpu_req[1] xor (false -> pre data[0]))
         ;
 
-    data[0] = if not data_valid and in_arb = 0 and in_bus[3] then
-                    if in_bus[1] xor false -> pre data[0] then in_bus[1]
-                    else false -> pre data[0]
+    data[0] = if not data_valid
+                    and 0 -> pre in_arb = 2
+                    and in_arb = 0
+                    and in_bus[3] then
+                        if (not in_bus[1] and false -> pre data[0])
+                            or (in_bus[1] and not (false -> pre data[0]))
+                        then in_bus[1]
+                        else false -> pre data[0]
                 else false -> pre data[0]
         ;
-    data[1] = if not data_valid and in_arb = 0 and in_bus[3] then
+    data[1] = if not data_valid
+                and 0 -> pre in_arb = 2
+                and in_arb = 0
+                and in_bus[3]
+                then
                     in_bus[2]
                 else if data_valid
                         and in_arb = 0
@@ -203,7 +212,17 @@ let
                     else false -> pre data[1]
         ;
 
+    write_valid = if in_cpu[3] and in_cpu[0] then false
+                    else if in_bus[0]
+                            and in_bus[3]
+                            and 0 -> pre in_arb = 2
+                            and in_arb = 0
+                        then true
+                        else true -> pre write_valid
+        ;
+
     out_arb = not data_valid
+                or not write_valid
         ;
 
     read = if in_cpu[3] then
