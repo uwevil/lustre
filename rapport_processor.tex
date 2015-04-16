@@ -19,10 +19,9 @@
 \pagestyle{fancy}
 \fancyhead{}
 \renewcommand{\headrulewidth}{0.5pt}
-\fancyhead[R]{\textit{\nouppercase{\rightmark}}}
+\fancyhead[L]{\textit{\nouppercase{\leftmark}}}
 \fancyfoot{}
 \renewcommand{\footrulewidth}{0.5pt}
-\fancyfoot[L]{\textit{\nouppercase{\leftmark}}}
 \fancyfoot[R]{\thepage}
 
 \begin{document}
@@ -208,9 +207,10 @@ tel;
 		node bus(in_1, in_2, in_3, in_mem: bool^4; arg_gnt: int) 
 			returns (out: bool^4);
 
---in_1( resp. 2, 3, mem): l'entrée dans le bus mais les données 
-	entrées sont toujours dans le bus, elles ne peuvent sortir 
-	que si l'arbitre leurs donne la permission
+--in_1( resp. 2, 3, mem): l'entrée dans le bus mais les 
+	données entrées sont toujours dans le bus, elles ne 
+	peuvent sortir que si l'arbitre leurs donne la 
+	permission
 --temp1( resp. 2, 3, 4): b_in_L1_1 et b_in_mem dans l'énoncé
 
 
@@ -273,8 +273,9 @@ tel;
 	\begin{framed}
 		\begin{verbatim}
 		node cache(in_arb: int; in_cpu: bool^4; in_bus: bool^4)
-    returns (out_arb: bool; out_cpu: bool^2; out_bus: bool^4);
+ returns (out_arb: bool; out_cpu: bool^2; out_bus: bool^4);
 
+-- ICI, c'est la version du cache L1_1
 --in_arb: le numéro actuel de ce qui a la permission d'accès 
 	au bus
 --in_cpu: typedata, adresse, data, valid
@@ -282,17 +283,19 @@ tel;
 
 --out_arb: vaut 1 si le cache veut le bus sinon 0, le signal 
 	maintient jusqu'à qu'il recoit la réponse du mémoire
---out_cpu: data, valid, valid vaut 1 si la réponse est valide 
+--out_cpu: data, valid, valid vaut 1 si la réponse est valide
 	et l'acquittement du cache
 --out_bus: typedata, adresse, data, valid
 
 --data: le registre local dans le cache
---cpu_req: stock la requete de CPU précedente ou en traitement
---data_valid: vaut 1 si les données stockent dans le cache est 
-	correspond avec la requête de CPU
+--cpu_req: stocke la requete de CPU précedente ou en 
+	traitement
+--data_valid: vaut 1 si les données stockent dans le cache 
+	est correspond avec la requête de CPU
 --read, write: l'etat actuel du traitement
---write_valid: vaut 1 si les données sont valides sur le cache 
-	donc il peut répondre tout de suite au CPU sinon vaut 0
+--write_valid: vaut 1 si les données sont valides sur le 
+	cache donc il peut répondre tout de suite au CPU 
+	sinon vaut 0
 
 
 var data: bool^2;
@@ -332,7 +335,7 @@ let
                         if (not in_bus[1] 
                         		and false -> pre data[0])
                             or (in_bus[1] 
-                            	and not (false -> pre data[0]))
+                            		and not (false -> pre data[0]))
                         then in_bus[1]
                         else false -> pre data[0]
                 else false -> pre data[0]
@@ -347,8 +350,8 @@ let
                         and in_arb = 0
                         and in_bus[3]
                         and (data[0] and in_bus[1]
-                        	or not (data[0]) 
-                        	and not (in_bus[1])) then
+                        or not (data[0]) 
+                        and not (in_bus[1])) then
                             in_bus[2]
                     else if data_valid and write then
                         in_cpu[2]
@@ -382,19 +385,25 @@ let
     out_cpu[0] = if data_valid and read then data[1]
                     else false
         ;
-    out_cpu[1] = if data_valid then true else false
+    out_cpu[1] = if write then
+                    if 0 -> pre in_arb = 1* and in_arb = 0 
+                    then
+                        true
+                    else
+                        false
+                    else if data_valid then true else false
         ;
 tel;
-
 		\end{verbatim}
 	\end{framed}
 	
-	Le cache doit traiter des cas spécifiques car il doit vérifier si les données présentées dans le cache sont valides, si elles sont valides, le cache répond au bus dans le même cycle, sinon il met la requête dans sa boîte aux lettres sur le bus et demande l'arbitre pour avoir le bus, dès qu'il reçoit la réponse de la mémoire, il renvoie les données vers le CPU. Dans le code, on change le \emph{1*} par 1, 2 ou 3 resp. L1_1, L1_2, L1_3.
+	Le cache doit traiter des cas spécifiques car il doit vérifier si les données présentées dans le cache sont valides, si elles sont valides, le cache répond au bus dans le même cycle, sinon il met la requête dans sa boîte aux lettres sur le bus et demande l'arbitre pour avoir le bus, dès qu'il reçoit la réponse de la mémoire, il renvoie les données vers le CPU. Dans le code, on change le \textit{1*} par 1, 2 ou 3 resp. L1\_1, L1\_2, L1\_3. Un remarque, si la requête est WRITE alors, dès que le cache reçoit la réponse de la mémoire, il répond au CPU dans le même cycle, mais, si READ, il répond au CPU dans un cycle après la réception des données de la mémoire car le cache doit mettre à jour le registre local( ce problème je n'arrive pas à résoudre).
 	
-	Le sénario de test est d'abord, il n'y a pas de requête valide de CPU, ensuite, CPU_WR(0, 1), le cache demande l'accès au bus car dans le cache il n'y a que les données de l'adresse 0( égale à 0). Dès que le cache a la permission au bus et reçoit la réponse valide de la mémoire, il renvoies le résultat au CPU dans le cycle suivant.
+	Le sénario de test est d'abord, il n'y a pas de requête valide de CPU, ensuite, CPU\_WR(0, 1), le cache demande l'accès au bus pour mettre à jour la mémoire car dans le cache il y a déjà les données à l'adresse 0( égale à 0). Le cache répond au CPU dès que la mémoire répond à cette requête dans le même cycle. Ensuite, CPU\_RD(1), le cache doit aussi demander l'arbitre et attend la réponse de la mémoire. Après la réception de la réponse du mémoire, le cache envoie le résultat dans le cycle suivant et etc...
+	
 	\begin{figure}[!htbp]	
-		\includegraphics[width = 16cm]{cache_diag.png}
-		\caption{Le bus est controlé absolutement par l'arbitre}
+		\includegraphics[width = 16cm]{cache_diag_1.png}
+		\caption{Le cache L1\_2 contrôle ses données locales et répond au besoin de CPU}
 	\end{figure}
 \end{document}
 
