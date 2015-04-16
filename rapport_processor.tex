@@ -10,6 +10,7 @@
 \usepackage{fancyhdr}
 \usepackage{amsmath}
 \usepackage{bbm}
+\usepackage{graphicx}
 
 \newcommand{\latin}[1]{\textit{#1}}
 
@@ -82,6 +83,12 @@
 	
 	Le CPU qui génère les requête selon la demande de l'utilisateur à travers l'entrée $gen$ de 2 bits, le $1^{er}$ bit définit le type de requête, le $2^{ème}$ bit definit l'adresse de données demandée. Tant que l'a première requête n'a pas eu la réponse du cache, le processeur se bloque jusqu'à quand il reçoit la réponse valide du cache. Dès que il reçoit la réponse valide, il génère automatiquement la nouvelle requête.
 	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width = 10cm]{cpu_diag.png}
+		\caption{CPU}
+	\end{figure}
+	
 \chapter{Arbitre}
 	\begin{framed}
 		\begin{verbatim}
@@ -131,6 +138,20 @@ let
 tel;
 		\end{verbatim}
 	\end{framed}
+	
+	L'arbitre prend en entrée 2 entrées $in$ de 3 bits et $valid$ de 1 bit. Si il y a plusieurs de requêtes simultanément, il va choisir le cache le plus prioritaire selon le numéro de cache et le dernier cache qui a utilisé le bus. Après un cycle, il rend le bus au mémoire, tant que le mémoire ne valide pas le bus( ne répond pas la requête du cache), le bus est toujours au mémoire. Si il y a des caches qui ne déactivent pas le signal de requête même si ils ont eu la réponse valide du mémoire, l'arbitre va rendre le bus au autre\footnote{Le cache dans ce programme n'a pas de comportement mauvais}.	
+	
+	\begin{figure}[!htbp]
+		
+		\includegraphics[width = 16cm]{arb_diag_1.png}
+		\caption{Le cache ne rend pas le bus aux autres}
+	\end{figure}
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width = 10cm]{arb_diag_2.png}
+		\caption{Le comportement normal du cache}
+	\end{figure}
+	
 \chapter{Mémoire}
 	\begin{framed}
 		\begin{verbatim}
@@ -142,34 +163,29 @@ tel;
 var reg0, reg1: bool;
 
 let
-    reg0 = 0 -> if false -> in[3] and false -> in[0] 
-    				and not (false -> in[1])
-                and false -> in[2] <> pre reg0 then
-                    false -> in[2]
-                else pre reg0
+    reg0 = if in[3] and in[0] and not (in[1])
+                then
+                    in[2]
+                else false -> pre reg0
                 ;
-    reg1 = 0 -> if false -> in[3] and false -> in[0] 
-    				and false -> in[1]
-                and false -> in[2] <> pre reg1 then
-                    false -> in[2]
-                else pre reg1
+    reg1 = if in[3] and in[0] and in[1]
+                then
+                    in[2]
+                else false -> pre reg1
                 ;
 
-    out[0] = if false -> pre in[3] then
+    out[0] = -- if false -> pre in[3] then
                     false -> pre in[0]
-                else false
+--                else false
             ;
-    out[1] = if false -> pre in[3] then
+    out[1] = --if false -> pre in[3] then
                     false -> pre in[1]
-                else false
+   --             else false
             ;
-    out[2] = if false -> pre in[3] then
-                if not (false -> pre in[1]) then
-                    pre reg0
-                else if false -> pre in[1] then
+    out[2] = if false -> pre in[1] then
                     pre reg1
-                else false
-                else false
+                else
+                    false -> pre reg0
             ;
     out[3] = false -> pre in[3]
             ;
@@ -178,6 +194,15 @@ tel;
 
 		\end{verbatim}
 	\end{framed}
+	
+	Le mémoire regard les données entrantes, si elles sont valides, il répond en mettant la réponse dans sa boîte aux lettres sur le bus, il prend un cycle pour traiter un requête. Au début, les données sur le mémoire sont mise à 0.
+	
+	\begin{figure}[!htbp]
+		
+		\includegraphics[width = 16cm]{arb_diag_1.png}
+		\caption{Le cache ne rend pas le bus aux autres}
+	\end{figure}
+	
 \chapter{Bus}
 	\begin{framed}
 		\begin{verbatim}

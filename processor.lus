@@ -1,6 +1,6 @@
 node cpu(gen: bool^2; in: bool^2) returns (out: bool^4);
 
---gen: 0 read, 1 write
+--gen: 1er bit désigne type de requête, 2eme bit désigne l'adresse de données
 --in: désigne 2 informations data ou ack, ces informations sont validées si 2eme bit vaut 1
 
 --out: typedata, adresse data, data, valid
@@ -78,32 +78,29 @@ node mem(in: bool^4)returns (out: bool^4);
 var reg0, reg1: bool;
 
 let
-    reg0 = 0 -> if false -> in[3] and false -> in[0] and not (false -> in[1])
-                and false -> in[2] <> pre reg0 then
-                    false -> in[2]
-                else pre reg0
+    reg0 = if in[3] and in[0] and not (in[1])
+                then
+                    in[2]
+                else false -> pre reg0
                 ;
-    reg1 = 0 -> if false -> in[3] and false -> in[0] and false -> in[1]
-                and false -> in[2] <> pre reg1 then
-                    false -> in[2]
-                else pre reg1
+    reg1 = if in[3] and in[0] and in[1]
+                then
+                    in[2]
+                else false -> pre reg1
                 ;
 
-    out[0] = if false -> pre in[3] then
+    out[0] = -- if false -> pre in[3] then
                     false -> pre in[0]
-                else false
+--                else false
             ;
-    out[1] = if false -> pre in[3] then
+    out[1] = --if false -> pre in[3] then
                     false -> pre in[1]
-                else false
+   --             else false
             ;
-    out[2] = if false -> pre in[3] then
-                if not (false -> pre in[1]) then
-                    pre reg0
-                else if false -> pre in[1] then
+    out[2] = if false -> pre in[1] then
                     pre reg1
-                else false
-                else false
+                else
+                    false -> pre reg0
             ;
     out[3] = false -> pre in[3]
             ;
