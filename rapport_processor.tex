@@ -39,7 +39,7 @@
 		\noindent\rule{\linewidth}{3pt}
 		\begin{center}
 			\bfseries
-			\large Processeur
+			\large Architecture multiprocesseur à mémoire partagée
 			
 		\end{center}
 		\vspace*{\stretch{2}}
@@ -50,6 +50,7 @@
 			16 Avril 2015
 		\end{center}
 	\end{titlepage}
+
 
 \chapter{CPU}
 	\begin{framed}
@@ -80,7 +81,7 @@
 	\end{verbatim}
 	\end{framed}
 	
-	Le CPU qui génère les requête selon la demande de l'utilisateur à travers l'entrée $gen$ de 2 bits, le $1^{er}$ bit définit le type de requête, le $2^{ème}$ bit definit l'adresse de données demandée. Tant que l'a première requête n'a pas eu la réponse du cache, le processeur se bloque jusqu'à quand il reçoit la réponse valide du cache. Dès que il reçoit la réponse valide, il génère automatiquement la nouvelle requête.
+	{\huge \itshape L}e CPU qui génère les requête selon la demande de l'utilisateur à travers l'entrée $gen$ de 2 bits, le $1^{er}$ bit définit le type de requête, le $2^{ème}$ bit definit l'adresse de données demandée. Tant que l'a première requête n'a pas eu la réponse du cache, le processeur se bloque jusqu'à quand il reçoit la réponse valide du cache. Dès que il reçoit la réponse valide, il génère automatiquement la nouvelle requête.
 	
 	\begin{figure}[!htbp]
 		\centering
@@ -138,7 +139,7 @@ tel;
 		\end{verbatim}
 	\end{framed}
 	
-	L'arbitre prend en entrée 2 entrées $in$ de 3 bits et $valid$ de 1 bit. Si il y a plusieurs de requêtes simultanément, il va choisir le cache le plus prioritaire selon le numéro de cache et le dernier cache qui a utilisé le bus. Après un cycle, il rend le bus à la mémoire, tant que la mémoire ne valide pas le bus( ne répond pas la requête du cache), le bus est toujours à la mémoire. Si il y a des caches qui ne déactivent pas le signal de requête même si ils ont eu la réponse valide de la mémoire, l'arbitre va rendre le bus au autre\footnote{Le cache dans ce programme n'a pas de comportement mauvais}.	
+	{\huge \itshape L}'arbitre prend en entrée 2 entrées $in$ de 3 bits et $valid$ de 1 bit. Si il y a plusieurs de requêtes simultanément, il va choisir le cache le plus prioritaire selon le numéro de cache et le dernier cache qui a utilisé le bus. Après un cycle, il rend le bus à la mémoire, tant que la mémoire ne valide pas le bus( ne répond pas la requête du cache), le bus est toujours à la mémoire. Si il y a des caches qui ne déactivent pas le signal de requête même si ils ont eu la réponse valide de la mémoire, l'arbitre va rendre le bus au autre\footnote{Le cache dans ce programme n'a pas de comportement mauvais.}.	
 	
 	\begin{figure}[!htbp]
 		\includegraphics[width = 16cm]{arb_diag_1.png}
@@ -194,7 +195,7 @@ tel;
 		\end{verbatim}
 	\end{framed}
 	
-	La mémoire regard les données entrantes, si elles sont valides, elle répond en mettant la réponse dans sa boîte aux lettres sur le bus, il prend un cycle pour traiter un requête. Au début, les données sur la mémoire sont mise à 0.
+	{\huge \itshape L}a mémoire regard les données entrantes, si elles sont valides, elle répond en mettant la réponse dans sa boîte aux lettres sur le bus, il prend un cycle pour traiter un requête. Au début, les données sur la mémoire sont mise à 0.
 	
 	\begin{figure}[!htbp]	
 		\includegraphics[width = 16cm]{mem_diag_1.png}
@@ -262,11 +263,11 @@ tel;
 		\end{verbatim}
 	\end{framed}
 	
-	Le bus prend en entrée 3 lignes de cache, 1 ligne pour la mémoire et 1 pour l'arbitre, il retourne la requête ou la réponse, cela dépend le contrôleur sur une seule ligne de sortie.
+	{\huge \itshape L}e bus prend en entrée 3 lignes de cache, 1 ligne pour la mémoire et 1 pour l'arbitre, il retourne la requête ou la réponse, cela dépend le contrôleur sur une seule ligne de sortie.
 	
 	\begin{figure}[!htbp]	
 		\includegraphics[width = 16cm]{bus_diag.png}
-		\caption{Le bus est controlé absolutement par l'arbitre}
+		\caption{Le bus est absolutement contrôlé par l'arbitre}
 	\end{figure}
 	
 \chapter{Cache}
@@ -397,7 +398,7 @@ tel;
 		\end{verbatim}
 	\end{framed}
 	
-	Le cache doit traiter des cas spécifiques car il doit vérifier si les données présentées dans le cache sont valides, si elles sont valides, le cache répond au bus dans le même cycle, sinon il met la requête dans sa boîte aux lettres sur le bus et demande l'arbitre pour avoir le bus, dès qu'il reçoit la réponse de la mémoire, il renvoie les données vers le CPU. Dans le code, on change le \textit{1*} par 1, 2 ou 3 resp. L1\_1, L1\_2, L1\_3. Un remarque, si la requête est WRITE alors, dès que le cache reçoit la réponse de la mémoire, il répond au CPU dans le même cycle, mais, si READ, il répond au CPU dans un cycle après la réception des données de la mémoire car le cache doit mettre à jour le registre local( ce problème je n'arrive pas à résoudre).
+	{\huge \itshape L}e cache doit traiter des cas spécifiques car il doit vérifier si les données présentées dans le cache sont valides, si elles sont valides, le cache répond au bus dans le même cycle, sinon il met la requête dans sa boîte aux lettres sur le bus et demande l'arbitre pour avoir le bus, dès qu'il reçoit la réponse de la mémoire, il renvoie les données vers le CPU. Dans le code, on change le \textit{1*} par 1, 2 ou 3 resp. L1\_1, L1\_2, L1\_3. Un remarque, si la requête est WRITE alors, dès que le cache reçoit la réponse de la mémoire, il répond au CPU dans le même cycle, mais, si READ, il répond au CPU dans un cycle après la réception des données de la mémoire car le cache doit mettre à jour le registre local( ce problème je n'arrive pas à résoudre).
 	
 	Le sénario de test est d'abord, il n'y a pas de requête valide de CPU, ensuite, CPU\_WR(0, 1), le cache demande l'accès au bus pour mettre à jour la mémoire car dans le cache il y a déjà les données à l'adresse 0( égale à 0). Le cache répond au CPU dès que la mémoire répond à cette requête dans le même cycle. Ensuite, CPU\_RD(1), le cache doit aussi demander l'arbitre et attend la réponse de la mémoire. Après la réception de la réponse du mémoire, le cache envoie le résultat dans le cycle suivant et etc...
 	
